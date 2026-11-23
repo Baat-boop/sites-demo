@@ -10,6 +10,7 @@ p { margin: 0; text-wrap: pretty; }
 a { color: inherit; }
 button, input, select, textarea { font: inherit; color: inherit; }
 figure { margin: 0; }
+[hidden] { display: none !important; }
 address { font-style: normal; }
 :focus-visible { outline: 3px solid var(--focus, var(--accent)); outline-offset: 3px; }
 .saut { position: absolute; left: 16px; top: -60px; z-index: 50; background: var(--encre); color: var(--fond); padding: 10px 14px; border-radius: 4px; }
