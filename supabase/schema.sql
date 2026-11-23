@@ -150,5 +150,11 @@ as $$
 $$;
 revoke execute on function public.purger() from public, anon, authenticated;
 
+-- ---------------------------------------------------------------- Droits du serveur (clé secrète)
+-- Le projet n'ouvre pas automatiquement les nouvelles tables à l'API : on donne seulement ce dont l'endpoint a besoin.
+grant select, insert on public.evenements to service_role;
+grant select, insert, update on public.reponses to service_role;
+grant select, insert, update, delete on public.limites, public.sels to service_role;
+
 create extension if not exists pg_cron;
 select cron.schedule('purge-quotidienne', '15 3 * * *', 'select public.purger()');
