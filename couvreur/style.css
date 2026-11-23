@@ -94,4 +94,5 @@ h1, h2, h3 { font-weight: 700; letter-spacing: 0.005em; }
   .actions .bouton { flex: 1 1 100%; }
   .formulaire .bouton { justify-self: stretch; }
 }
-@media (max-width: 380px) { .fiche { grid-template-columns: minmax(0, 1fr); } .entete .bouton { display: none; } }
+@media (max-width: 480px) { .entete .bouton { display: none; } .marque { white-space: nowrap; } }
+@media (max-width: 380px) { .fiche { grid-template-columns: minmax(0, 1fr); } }
