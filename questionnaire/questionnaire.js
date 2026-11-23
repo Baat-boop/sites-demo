@@ -177,6 +177,7 @@ function accueil() {
     <figure><img src="${IMG}restaurant-2-640.jpg" srcset="${IMG}restaurant-2-640.jpg 640w, ${IMG}restaurant-2-1280.jpg 1280w" sizes="(max-width: 760px) 100vw, 460px" alt="Exemple de site réalisé : la page d'un restaurant" width="640" height="400"></figure>
   </div>`;
   document.getElementById("go").onclick = () => {
+    try { window.mesure && window.mesure.evenement("questionnaire_debut"); } catch (e) {}
     if (deja) { const k = Q.findIndex(q => q.type !== "form" && rep[q.id] === undefined); question(k < 0 ? Q.length - 1 : k); }
     else question(0);
   };
@@ -256,7 +257,7 @@ function formulaire() {
       <div class="field"><label for="msg">Quelque chose à ajouter ? <small>(facultatif)</small></label><textarea id="msg" name="message">${esc(c.message || "")}</textarea></div>
       <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
     </div>
-    <p class="legal">Vos réponses sont reçues par Batiste Masson, créateur de sites, uniquement pour préparer votre proposition et vous recontacter à ce sujet. Elles transitent par le service d'envoi FormSubmit, ne sont ni revendues ni utilisées pour autre chose, et sont supprimées au bout de 12 mois sans suite. Pour les consulter, les corriger ou les faire supprimer : <a href="mailto:batiste.masson.web@gmail.com?subject=Mes%20donn%C3%A9es">batiste.masson.web@gmail.com</a>. Vous pouvez aussi saisir la CNIL (cnil.fr). Le détail est sur la page <a href="../mentions-legales/">Mentions légales et confidentialité</a>.</p>
+    <p class="legal">Vos réponses sont reçues par Batiste Masson, créateur de sites, uniquement pour préparer votre proposition et vous recontacter à ce sujet. Elles transitent par le service d'envoi FormSubmit et sont enregistrées dans une base Supabase (serveurs dans l'Union européenne) que je suis seul à pouvoir lire. Elles ne sont ni revendues ni utilisées pour autre chose, et sont supprimées au bout de 12 mois sans suite. Pour les consulter, les corriger ou les faire supprimer : <a href="mailto:batiste.masson.web@gmail.com?subject=Mes%20donn%C3%A9es">batiste.masson.web@gmail.com</a>. Vous pouvez aussi saisir la CNIL (cnil.fr). Le détail est sur la page <a href="../mentions-legales/">Mentions légales et confidentialité</a>.</p>
     <p class="err" id="err" role="alert"></p>
     <div class="nav">
       <button type="button" class="btn btn--ghost" id="prev">← Retour</button>
@@ -278,6 +279,8 @@ function formulaire() {
     const btn = document.getElementById("send");
     btn.disabled = true; btn.textContent = "Envoi…"; err.textContent = "";
     const prof = profil();
+    sauvegarde("reponse", { entreprise: d.entreprise, prenom: d.prenom, email: d.email, telephone: d.telephone,
+      message: d.message, metier: txt("metier"), profil: prof.nom, resume: donnees(prof).Resume, prompt: prompt(false) });
     try {
       const r = await fetch(ENVOI, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(donnees(prof)) });
       const j = await r.json().catch(() => ({}));
@@ -334,6 +337,17 @@ function profil() {
   if (rep.quand === 3) conseils.push("Se renseigne : relancer en douceur dans 2-3 semaines, pas de pression.");
   if ((rep.dispo || []).includes(4)) conseils.push("N'a rien (logo, photos, textes) : prévoir de rédiger les textes et de trouver ou faire les photos.");
   return { nom: pairs[0], desc: pairs[1], reco: reco.filter(Boolean), conseils, s };
+}
+
+/* Copie des réponses dans Supabase (par /api/collect), en plus de FormSubmit.
+   Ne bloque jamais l'envoi FormSubmit : erreurs ignorées, envoi en arrière-plan. */
+function sauvegarde(genre, champs) {
+  try {
+    if (!rep._uid) { rep._uid = crypto.randomUUID(); garde(); }
+    if (!window.mesure) return;
+    window.mesure.questionnaire(genre, Object.assign({ id: rep._uid }, champs));
+    window.mesure.evenement(genre === "reponse" ? "questionnaire_envoye" : "fiche_envoyee");
+  } catch (e) {}
 }
 
 function donnees(prof) {
@@ -400,6 +414,8 @@ function detail(n, apresEnvoi) {
     const corps = { _subject: `Fiche détaillée : ${c.entreprise || "?"}`, _template: "box", _captcha: "false",
       Entreprise: c.entreprise || "", Prenom: c.prenom || "", Email: c.email || "", Telephone: c.telephone || "",
       Fiche: ficheTexte(), Prompt_Claude: prompt(true) };
+    sauvegarde("fiche", { entreprise: c.entreprise, prenom: c.prenom, email: c.email, telephone: c.telephone,
+      metier: txt("metier"), fiche: corps.Fiche, prompt: corps.Prompt_Claude });
     try {
       const r = await fetch(ENVOI, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(corps) });
       const j = await r.json().catch(() => ({}));
