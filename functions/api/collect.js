@@ -47,13 +47,16 @@ async function traiter({ request, env }) {
 
   // 3. Empreinte du visiteur : sel aléatoire du jour + IP + navigateur, réduite à 16 caractères. L'IP n'est jamais stockée.
   const ip = request.headers.get("CF-Connecting-IP") || "inconnue";
-  const visiteur = (await sha256((await selDuJour(db)) + "|" + ip + "|" + (request.headers.get("User-Agent") || ""))).slice(0, 16);
+  const sel = await selDuJour(db);
+  const visiteur = (await sha256(sel + "|" + ip + "|" + (request.headers.get("User-Agent") || ""))).slice(0, 16);
+  // Clé de limite sur l'IP seule (hachée) : changer de navigateur ou de User-Agent ne permet pas de la contourner.
+  const limite = (await sha256(sel + "|limite|" + ip)).slice(0, 16);
 
   // 4. Limites de débit.
   if (!(await db.rpc("prendre_jeton", { p_cle: "tout", p_max: 3000, p_secondes: 60 }))) return reponse(429, "trop de requêtes");
 
   if (corps.genre === "evenement") {
-    if (!(await db.rpc("prendre_jeton", { p_cle: "e:" + visiteur, p_max: 120, p_secondes: 600 }))) return reponse(429, "trop de requêtes");
+    if (!(await db.rpc("prendre_jeton", { p_cle: "e:" + limite, p_max: 120, p_secondes: 600 }))) return reponse(429, "trop de requêtes");
     const ligne = evenement(corps, site, visiteur);
     if (!ligne) return reponse(400, "événement invalide");
     await db.inserer("evenements", ligne);
@@ -61,7 +64,7 @@ async function traiter({ request, env }) {
   }
 
   if (corps.genre === "reponse" || corps.genre === "fiche") {
-    if (!(await db.rpc("prendre_jeton", { p_cle: "r:" + visiteur, p_max: 6, p_secondes: 3600 }))) return reponse(429, "trop de requêtes");
+    if (!(await db.rpc("prendre_jeton", { p_cle: "r:" + limite, p_max: 6, p_secondes: 3600 }))) return reponse(429, "trop de requêtes");
     const ligne = reponseQuestionnaire(corps, site);
     if (!ligne) return reponse(400, "réponse invalide");
     if (corps.genre === "reponse") {
