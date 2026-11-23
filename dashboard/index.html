@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tableau de bord | Batiste Masson</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#f2ede3">
+<link rel="stylesheet" href="../commun/base.css">
+<link rel="stylesheet" href="tableau.css">
+</head>
+<body>
+<header class="entete">
+  <div class="page">
+    <p class="signature"><b>Tableau de bord</b><span>Batiste Masson</span></p>
+    <div class="entete__actions" id="actions" hidden>
+      <label class="sr" for="periode">Période</label>
+      <select id="periode">
+        <option value="7">7 derniers jours</option>
+        <option value="30" selected>30 derniers jours</option>
+        <option value="90">90 derniers jours</option>
+        <option value="400">13 mois</option>
+      </select>
+      <label class="sr" for="site">Site</label>
+      <select id="site">
+        <option value="prod" selected>Site en ligne</option>
+        <option value="apercu">Aperçus (tests)</option>
+      </select>
+      <button class="bouton bouton--clair" id="deconnexion" type="button">Se déconnecter</button>
+    </div>
+  </div>
+</header>
+
+<main id="contenu" class="page">
+  <!-- Connexion -->
+  <section id="connexion" class="connexion" hidden aria-labelledby="connexion-titre">
+    <h1 id="connexion-titre">Connexion</h1>
+    <p>Accès réservé. Saisissez votre adresse : si elle est autorisée, vous recevez un lien de connexion valable une heure.</p>
+    <form id="form-connexion" novalidate>
+      <div class="champ"><label for="email">Adresse mail</label><input id="email" name="email" type="email" autocomplete="email" required></div>
+      <button class="bouton" type="submit">Recevoir le lien</button>
+      <p class="message" id="message-connexion" role="status"></p>
+    </form>
+  </section>
+
+  <p id="etat" class="etat" role="status">Chargement…</p>
+
+  <!-- Données -->
+  <div id="donnees" hidden>
+    <section aria-labelledby="chiffres-titre">
+      <h2 id="chiffres-titre" class="sr">Chiffres clés</h2>
+      <ul class="chiffres" id="chiffres"></ul>
+      <p class="note">Les visiteurs dont le navigateur demande à ne pas être suivi (Brave, Global Privacy Control) ne sont pas comptés ici. Les visites complètes sont dans <a href="https://dash.cloudflare.com/?to=/:account/web-analytics" rel="noopener">Cloudflare Web Analytics</a>.</p>
+    </section>
+
+    <section class="bloc" aria-labelledby="jours-titre">
+      <h2 id="jours-titre">Visites par jour</h2>
+      <div id="graphique" class="graphique"></div>
+    </section>
+
+    <section class="bloc" aria-labelledby="entonnoir-titre">
+      <h2 id="entonnoir-titre">Entonnoir du questionnaire</h2>
+      <ol class="entonnoir" id="entonnoir"></ol>
+    </section>
+
+    <div class="grille">
+      <section class="bloc" aria-labelledby="pages-titre"><h2 id="pages-titre">Pages</h2><table id="t-pages"></table></section>
+      <section class="bloc" aria-labelledby="demos-titre"><h2 id="demos-titre">Démos les plus vues</h2><table id="t-demos"></table></section>
+      <section class="bloc" aria-labelledby="sources-titre"><h2 id="sources-titre">Provenance</h2><table id="t-sources"></table></section>
+      <section class="bloc" aria-labelledby="appareils-titre"><h2 id="appareils-titre">Appareils</h2><table id="t-appareils"></table></section>
+    </div>
+
+    <section class="bloc" aria-labelledby="prospects-titre">
+      <h2 id="prospects-titre">Prospects venus par un lien ?n=</h2>
+      <table id="t-prospects"></table>
+    </section>
+
+    <section class="bloc" aria-labelledby="reponses-titre">
+      <div class="bloc__tete">
+        <h2 id="reponses-titre">Réponses reçues</h2>
+        <button class="bouton bouton--clair" id="export" type="button">Exporter en CSV</button>
+      </div>
+      <div id="reponses" class="reponses"></div>
+    </section>
+  </div>
+</main>
+<script src="tableau.js"></script>
+</body>
+</html>

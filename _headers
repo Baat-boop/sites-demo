@@ -1,6 +1,6 @@
 # En-têtes de sécurité appliqués par Cloudflare Pages à toutes les pages.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://formsubmit.co https://cloudflareinsights.com; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://formsubmit.co https://cloudflareinsights.com https://adlswvqcxltxxubxztnp.supabase.co; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=31536000
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
@@ -17,6 +17,12 @@
   X-Robots-Tag: noindex
 /questionnaire/*
   X-Robots-Tag: noindex
+
+# Tableau de bord privé : jamais indexé, jamais mis en cache, aucun référent envoyé.
+/dashboard/*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+  Referrer-Policy: no-referrer
 
 # Photos : en cache une semaine.
 /portfolio-img/*
