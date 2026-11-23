@@ -1,0 +1,3 @@
+# Anciennes adresses du type /sites-demo/couvreur/ (copiées depuis github.io) vers la même page ici.
+/sites-demo /  301
+/sites-demo/* /:splat 301

@@ -1,0 +1,88 @@
+/* Ciselle : le blanc d'un salon carrelé, le vert pétrole des flacons de soin, et une liste de tarifs
+   mise en page comme celle affichée en vitrine. */
+:root {
+  --fond: #fbfaf7; --blanc: #fff; --encre: #1d2526; --discret: #556062; --ligne: #dfe3e1; --ligne-forte: #8a9696;
+  --accent: #1f5f5b; --accent-fonce: #164a47; --accent-encre: #fff; --doux: #e8f0ee; --focus: #1f5f5b;
+  --titre: "Cormorant Garamond", Georgia, serif; --texte: "Figtree", system-ui, sans-serif;
+  --r-champ: 6px;
+}
+h1, h2, h3 { font-weight: 600; letter-spacing: -0.005em; }
+
+.entete { border-bottom: 1px solid var(--ligne); background: var(--fond); }
+.entete .page { display: flex; align-items: center; gap: 28px; padding-block: 14px; }
+.nom { font: italic 500 34px/1 var(--titre); text-decoration: none; color: var(--accent); }
+.menu { display: flex; gap: 24px; margin-left: auto; }
+.menu a { text-decoration: none; }
+.menu a:hover { text-decoration: underline; text-underline-offset: 5px; }
+
+.bouton { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 10px 20px; background: var(--accent); color: var(--accent-encre); font-weight: 600; text-decoration: none; border: 0; border-radius: 999px; cursor: pointer; }
+.bouton:hover { background: var(--accent-fonce); }
+.bouton--grand { min-height: 54px; padding-inline: 28px; font-size: 18px; }
+
+.ouverture { padding-block: clamp(32px, 5vw, 64px); }
+.ouverture__grille { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(28px, 5vw, 64px); align-items: center; }
+.ouverture h1 { font-size: clamp(44px, 6vw, 80px); line-height: 1; }
+.chapeau { font-size: clamp(18px, 1.5vw, 20px); margin: 20px 0 22px; max-width: 40ch; color: var(--discret); }
+.statut { font-weight: 600; padding-left: 18px; position: relative; margin-bottom: 24px; }
+.statut::before { content: ""; position: absolute; left: 0; top: .55em; width: 9px; height: 9px; border-radius: 50%; background: var(--ligne-forte); }
+.statut[data-etat="ouvert"]::before { background: #2e7d4f; }
+.statut[data-etat="ferme"]::before { background: #a2412f; }
+.ouverture__photo img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 4px; background: #c9cfcd; }
+
+.section { padding-block: clamp(56px, 8vw, 96px); }
+.section h2 { font-size: clamp(38px, 4.6vw, 56px); line-height: 1.05; }
+
+.tarif { max-width: 900px; margin-inline: auto; background: var(--blanc); border: 1px solid var(--ligne-forte); outline: 1px solid var(--ligne-forte); outline-offset: 6px; padding: clamp(28px, 5vw, 56px); text-align: center; }
+.tarif__note { margin: 12px auto 0; max-width: 52ch; color: var(--discret); }
+.tarif__colonnes { margin-top: 32px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px clamp(28px, 5vw, 64px); text-align: left; }
+.tarif h3 { font: italic 500 28px/1.2 var(--titre); color: var(--accent); margin: 12px 0 6px; }
+.prix { list-style: none; margin: 0 0 16px; padding: 0; }
+.prix li { display: flex; align-items: baseline; gap: 10px; padding: 8px 0; }
+.prix li::after { content: ""; order: 1; flex: 1; border-bottom: 1px dotted var(--ligne-forte); transform: translateY(-4px); }
+.prix b { order: 2; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.section--salon { background: var(--doux); }
+.salon { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(28px, 5vw, 72px); align-items: start; }
+.salon__photo img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 4px; }
+.salon__texte p { margin-top: 16px; max-width: 52ch; font-size: 18px; }
+.salon__petite { margin-top: 32px; width: min(260px, 60%); }
+.salon__petite img { aspect-ratio: 3 / 4; object-fit: cover; border-radius: 4px; }
+
+.infos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; }
+.infos h2 { font-size: clamp(32px, 3.6vw, 44px); margin-bottom: 16px; }
+.infos p + p { margin-top: 8px; }
+.horaires { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 8px 24px; }
+.horaires dt { font-weight: 600; }
+.horaires dd { margin: 0; }
+
+.section--rdv { background: var(--accent); color: #fff; }
+.section--rdv h2 { color: #fff; }
+.rdv { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 40px; align-items: start; }
+.rdv > div > p { margin-top: 14px; color: #d5e6e3; max-width: 40ch; }
+.formulaire { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; background: var(--blanc); color: var(--encre); padding: clamp(20px, 3vw, 32px); border-radius: 8px; }
+.formulaire .bouton, .formulaire .retour-demo { grid-column: 1 / -1; justify-self: start; }
+.formulaire .retour-demo { justify-self: stretch; }
+
+.pied { padding-block: 28px 36px; font-size: 15px; color: var(--discret); border-top: 1px solid var(--ligne); }
+.pied .page { display: flex; flex-wrap: wrap; gap: 12px 32px; justify-content: space-between; align-items: end; }
+.nom--pied { display: block; font-size: 28px; margin-bottom: 4px; }
+
+.credits { padding-block: 48px 80px; max-width: 760px; }
+.credits h1 { font-size: clamp(38px, 5vw, 56px); }
+.credits p { margin-top: 12px; color: var(--discret); }
+.credits ul { margin-top: 24px; padding-left: 20px; }
+.credits li { margin: 8px 0; }
+
+@media (max-width: 900px) {
+  .ouverture__grille, .salon, .rdv { grid-template-columns: minmax(0, 1fr); }
+  .ouverture__photo { order: -1; }
+  .salon__photo img { aspect-ratio: 4 / 3; }
+}
+@media (max-width: 640px) {
+  .menu { display: none; }
+  .entete .bouton { margin-left: auto; min-height: 42px; padding-inline: 16px; font-size: 15px; }
+  .tarif { outline: 0; padding: 24px 18px; }
+  .tarif__colonnes, .infos, .formulaire { grid-template-columns: minmax(0, 1fr); }
+  .formulaire .bouton, .ouverture .bouton { justify-self: stretch; width: 100%; }
+}
+@media (max-width: 380px) { .entete .bouton { display: none; } }

@@ -1,0 +1,25 @@
+# En-têtes de sécurité appliqués par Cloudflare Pages à toutes les pages.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://formsubmit.co https://cloudflareinsights.com; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=31536000
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+
+# Les démos et le questionnaire ne doivent pas apparaître sur Google à la place des vrais sites.
+/couvreur/*
+  X-Robots-Tag: noindex
+/restaurant/*
+  X-Robots-Tag: noindex
+/coiffeur/*
+  X-Robots-Tag: noindex
+/questionnaire/*
+  X-Robots-Tag: noindex
+
+# Photos : en cache une semaine.
+/portfolio-img/*
+  Cache-Control: public, max-age=604800
+/*/assets/img/*
+  Cache-Control: public, max-age=604800
