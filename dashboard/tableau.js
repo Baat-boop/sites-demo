@@ -29,6 +29,38 @@
   const garder = (s) => { try { sessionStorage.setItem(SESSION, JSON.stringify(s)); } catch {} };
   const oublier = () => { try { sessionStorage.removeItem(SESSION); } catch {} };
 
+  // Connexion PKCE : le lien du mail revient avec ?code=…, échangé contre une session grâce au vérificateur
+  // gardé dans ce navigateur (localStorage, une heure au plus, effacé après usage). Le code seul ne sert à rien.
+  const PKCE = "tableau-pkce";
+  const b64url = (o) => btoa(String.fromCharCode(...new Uint8Array(o))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  async function nouveauPkce() {
+    const verificateur = b64url(crypto.getRandomValues(new Uint8Array(32)));
+    const defi = b64url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verificateur)));
+    try { localStorage.setItem(PKCE, JSON.stringify({ v: verificateur, t: Date.now() })); } catch {}
+    return defi;
+  }
+  async function depuisCode() {
+    const p = new URLSearchParams(location.search);
+    const code = p.get("code"), erreurLien = p.get("error_description") || p.get("error");
+    if (!code && !erreurLien) return null;
+    history.replaceState(null, "", location.pathname); // retire le code de la barre d'adresse
+    let gard = null;
+    try { gard = JSON.parse(localStorage.getItem(PKCE) || "null"); localStorage.removeItem(PKCE); } catch {}
+    if (erreurLien || !gard || Date.now() - gard.t > 3600000) {
+      $("#message-connexion").textContent = "Ce lien n'est plus valable, ou il a été ouvert dans un autre navigateur. Demandez-en un nouveau ici.";
+      return null;
+    }
+    const r = await fetch(SUPA + "/auth/v1/token?grant_type=pkce", {
+      method: "POST", headers: { apikey: CLE_PUBLIQUE, "Content-Type": "application/json" },
+      body: JSON.stringify({ auth_code: code, code_verifier: gard.v }),
+    });
+    if (!r.ok) { $("#message-connexion").textContent = "Ce lien n'est plus valable. Demandez-en un nouveau."; return null; }
+    const j = await r.json();
+    const s = { access_token: j.access_token, refresh_token: j.refresh_token, expire: Date.now() + j.expires_in * 1000 };
+    garder(s);
+    return s;
+  }
+
   function depuisLien() {
     if (!location.hash.includes("access_token") && !location.hash.includes("error")) return null;
     const p = new URLSearchParams(location.hash.slice(1));
@@ -78,9 +110,10 @@
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = "Écrivez une adresse mail complète."; return; }
     const bouton = e.submitter; bouton.disabled = true;
     try {
+      const defi = await nouveauPkce();
       await fetch(SUPA + "/auth/v1/otp?redirect_to=" + encodeURIComponent(location.origin + "/dashboard/"), {
         method: "POST", headers: { apikey: CLE_PUBLIQUE, "Content-Type": "application/json" },
-        body: JSON.stringify({ email, create_user: false }),
+        body: JSON.stringify({ email, create_user: false, code_challenge: defi, code_challenge_method: "s256" }),
       });
     } catch {}
     // Même message dans tous les cas : on ne révèle pas si l'adresse est autorisée.
@@ -250,6 +283,9 @@
   function erreur(e) { if (e && e.message === "session") afficherConnexion(); else etat("Impossible de charger les données. Réessayez dans un instant."); }
 
   // ------------------------------------------------------------------ Démarrage
-  depuisLien();
-  if (!lire()) afficherConnexion(); else charger().catch(erreur);
+  (async () => {
+    depuisLien();
+    await depuisCode().catch(() => null);
+    if (!lire()) afficherConnexion(); else charger().catch(erreur);
+  })();
 })();
