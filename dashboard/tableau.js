@@ -117,8 +117,29 @@
       });
     } catch {}
     // Même message dans tous les cas : on ne révèle pas si l'adresse est autorisée.
-    msg.textContent = "Si cette adresse est autorisée, un lien vient d'être envoyé. Ouvrez-le dans ce navigateur.";
+    msg.textContent = "Si cette adresse est autorisée, un mail vient d'être envoyé : ouvrez le lien dans ce navigateur, ou tapez le code ci-dessous.";
+    $("#form-code").hidden = false; $("#form-code").dataset.email = email; $("#code").focus();
     setTimeout(() => { bouton.disabled = false; }, 30000);
+  });
+  // Connexion par le code du mail (pratique quand la boîte mail n'est que sur le téléphone).
+  $("#form-code").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const code = $("#code").value.replace(/\s/g, ""), msg = $("#message-code"), email = e.currentTarget.dataset.email;
+    if (!/^[0-9]{6,10}$/.test(code)) { msg.textContent = "Tapez le code à chiffres reçu par mail."; return; }
+    const bouton = e.submitter; bouton.disabled = true; msg.textContent = "Vérification…";
+    try {
+      const r = await fetch(SUPA + "/auth/v1/verify", {
+        method: "POST", headers: { apikey: CLE_PUBLIQUE, "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "email", email, token: code }),
+      });
+      if (!r.ok) throw new Error();
+      const j = await r.json();
+      garder({ access_token: j.access_token, refresh_token: j.refresh_token, expire: Date.now() + j.expires_in * 1000 });
+      $("#code").value = ""; $("#form-code").hidden = true; msg.textContent = "";
+      await charger();
+    } catch {
+      msg.textContent = "Code refusé ou expiré. Vérifiez-le, ou demandez un nouveau mail.";
+    } finally { bouton.disabled = false; }
   });
   $("#deconnexion").addEventListener("click", async () => {
     const s = lire();

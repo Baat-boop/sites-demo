@@ -43,6 +43,11 @@
       <button class="bouton" type="submit">Recevoir le lien</button>
       <p class="message" id="message-connexion" role="status"></p>
     </form>
+    <form id="form-code" novalidate hidden>
+      <div class="champ"><label for="code">Code reçu par mail</label><span class="aide">Le code est dans le même mail que le lien : vous pouvez le lire sur votre téléphone et le taper ici.</span><input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" maxlength="10" required></div>
+      <button class="bouton" type="submit">Se connecter avec le code</button>
+      <p class="message" id="message-code" role="status"></p>
+    </form>
   </section>
 
   <p id="etat" class="etat" role="status">Chargement…</p>
