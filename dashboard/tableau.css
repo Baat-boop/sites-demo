@@ -72,4 +72,5 @@ td.vide { color: var(--discret); }
   .reponse dd { margin-bottom: 8px; }
   .suivi { grid-template-columns: minmax(0, 1fr); }
   .entete__actions select { flex: 1 1 140px; }
+  #t-prospects th:nth-child(3), #t-prospects td:nth-child(3) { display: none; }
 }
