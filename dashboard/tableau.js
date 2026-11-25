@@ -183,12 +183,18 @@
     const fiches = reponses.filter((x) => x.fiche).length;
 
     const chiffres = $("#chiffres"); chiffres.replaceChildren();
-    for (const [n, l] of [[vues.length, "pages vues"], [visiteurs, "visiteurs (par jour)"], [clicsQ, "clics vers le questionnaire"], [reponses.length, "questionnaires reçus"], [fiches, "fiches détaillées"]])
-      chiffres.append(el("li", {}, el("b", { texte: nombre(n) }), el("span", { texte: l })));
+    const libelles = [
+      [vues.length, "page vue", "pages vues"], [visiteurs, "visiteur (par jour)", "visiteurs (par jour)"],
+      [clicsQ, "clic vers le questionnaire", "clics vers le questionnaire"], [reponses.length, "questionnaire reçu", "questionnaires reçus"],
+      [fiches, "fiche détaillée", "fiches détaillées"],
+    ];
+    for (const [n, un, plusieurs] of libelles)
+      chiffres.append(el("li", {}, el("b", { texte: nombre(n) }), el("span", { texte: n > 1 ? plusieurs : un })));
 
     // Entonnoir
     const ent = $("#entonnoir"); ent.replaceChildren();
-    const pc = (a, b) => (b ? " (" + Math.round((a / b) * 100) + " %)" : "");
+    // Pourcentage seulement s'il a un sens : les visiteurs « ne pas suivre » envoient des réponses sans avoir été comptés au début.
+    const pc = (a, b) => (b && a <= b ? " (" + Math.round((a / b) * 100) + " %)" : "");
     for (const [n, l] of [[clicsQ, "clics vers le questionnaire"], [debuts, "questionnaires commencés"], [reponses.length, "envoyés" + pc(reponses.length, debuts)], [fiches, "fiches remplies" + pc(fiches, reponses.length)]])
       ent.append(el("li", {}, el("b", { texte: nombre(n) }), el("span", { texte: l })));
 
