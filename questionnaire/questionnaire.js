@@ -42,7 +42,8 @@ const Q = [
     opts: [
       ["Clair et épuré", "Beaucoup d'espace, très net", {t: -2, c: -1}, "coiffeur-640.jpg"],
       ["Chaleureux et authentique", "Bois, tons chauds, ambiance", {t: 1, c: 2}, "restaurant-640.jpg"],
-      ["Franc et solide", "Gros titres, le travail en vedette", {t: 1, c: 0, p: 1}, "couvreur-640.jpg"] ] },
+      ["Franc et solide", "Gros titres, le travail en vedette", {t: 1, c: 0, p: 1}, "couvreur-640.jpg"],
+      ["Personnalisé", "Décrivez le style que vous voulez", {}, null] ], libre: 3 },
 
   { id: "couleurs", type: "sw", titre: "Quelles couleurs vous ressemblent ?",
     opts: [
@@ -192,6 +193,7 @@ function optionHTML(q, o, k) {
   const coche = multi ? (val || []).includes(k) : val === k;
   const input = `<input type="${multi ? "checkbox" : "radio"}" name="${q.id}" value="${k}" ${coche ? "checked" : ""}>`;
   const texte = `<span><b>${esc(titre)}</b>${sous ? `<small>${esc(sous)}</small>` : ""}${q.type === "one" && extra ? `<q>${esc(extra)}</q>` : ""}</span>`;
+  if (q.type === "pic" && !extra) return `<label class="opt opt--pic opt--libre">${input}<span class="pic pic--libre" aria-hidden="true"><span>Votre style</span></span><span class="row"><span class="tick" aria-hidden="true"></span>${texte}</span></label>`;
   if (q.type === "pic") return `<label class="opt opt--pic">${input}<span class="pic"><img src="${IMG}${extra}" alt="" width="640" height="400" loading="lazy"></span><span class="row"><span class="tick" aria-hidden="true"></span>${texte}</span></label>`;
   if (q.type === "sw") return `<label class="opt opt--sw">${input}<span class="sw" aria-hidden="true">${extra.map(c => `<i style="background:${c}"></i>`).join("")}</span><span class="row"><span class="tick" aria-hidden="true"></span>${texte}</span></label>`;
   return `<label class="opt">${input}<span class="tick" aria-hidden="true"></span>${texte}</label>`;
@@ -208,6 +210,11 @@ function question(n) {
       ${q.aide ? `<p class="hint">${esc(q.aide)}</p>` : ""}
       <div class="${cls}">${q.opts.map((o, k) => optionHTML(q, o, k)).join("")}</div>
     </fieldset>
+    ${q.libre !== undefined ? `<div class="field libre" id="libre-bloc" ${rep[q.id] === q.libre ? "" : "hidden"}>
+      <label for="libre">Décrivez le style que vous aimez</label>
+      <span class="sub" id="libre-s">Une ambiance, des couleurs, ou l'adresse d'un site qui vous plaît.</span>
+      <textarea id="libre" maxlength="400" aria-describedby="libre-s" placeholder="Ex. : sobre comme un faire-part, beaucoup de photos de mes réalisations, un peu de vert…">${esc(rep[q.id + "Libre"] || "")}</textarea>
+    </div>` : ""}
     <p class="err" id="err" role="alert"></p>
     <div class="nav">
       <button type="button" class="btn btn--ghost" id="prev">← Retour</button>
@@ -217,9 +224,15 @@ function question(n) {
   const f = document.getElementById("f");
   const next = document.getElementById("next");
   const err = document.getElementById("err");
-  const maj = () => { next.disabled = q.type === "many" ? false : rep[q.id] === undefined; };
+  const libre = document.getElementById("libre");
+  const libreChoisi = () => q.libre !== undefined && rep[q.id] === q.libre;
+  const maj = () => {
+    next.disabled = q.type === "many" ? false : rep[q.id] === undefined || (libreChoisi() && (rep[q.id + "Libre"] || "").trim().length < 3);
+  };
   maj();
+  if (libre) libre.addEventListener("input", () => { rep[q.id + "Libre"] = libre.value.slice(0, 400); garde(); maj(); });
   f.addEventListener("change", e => {
+    if (e.target === libre) return;
     const k = Number(e.target.value);
     err.textContent = "";
     if (q.type === "many") {
@@ -233,7 +246,9 @@ function question(n) {
       rep[q.id] = v;
     } else {
       rep[q.id] = k;
-      setTimeout(() => { if (Q[i] === q) suivant(); }, 320); // passe tout seul à la suite
+      if (q.libre !== undefined) document.getElementById("libre-bloc").hidden = k !== q.libre;
+      if (k === q.libre) libre.focus(); // « Personnalisé » : on attend la description
+      else setTimeout(() => { if (Q[i] === q) suivant(); }, 320); // passe tout seul à la suite
     }
     garde(); maj();
   });
@@ -305,7 +320,11 @@ function scores() {
   return s;
 }
 const lib = (q, k) => (q.opts[k] || [""])[0];
-const txt = id => { const q = Q.find(x => x.id === id); const v = rep[id]; if (v === undefined) return "—"; return [].concat(v).map(k => lib(q, k)).join(", ") || "—"; };
+const txt = id => {
+  const q = Q.find(x => x.id === id); const v = rep[id]; if (v === undefined) return "—";
+  if (q.libre !== undefined && v === q.libre) return `${lib(q, v)} : « ${(rep[id + "Libre"] || "").trim()} »`;
+  return [].concat(v).map(k => lib(q, k)).join(", ") || "—";
+};
 
 function profil() {
   const s = scores();
@@ -319,7 +338,8 @@ function profil() {
   ].find(Boolean);
   const reco = [];
   const st = rep.style, co = rep.couleurs;
-  reco.push(["Un style clair et épuré", "Un style chaleureux, avec des tons chauds", "Une grande photo de votre travail en ouverture"][st] || "Un style clair");
+  reco.push(st === 3 ? `Le style que vous avez décrit : « ${(rep.styleLibre || "").trim()} »`
+    : ["Un style clair et épuré", "Un style chaleureux, avec des tons chauds", "Des titres francs et votre travail en vedette"][st] || "Un style clair");
   reco.push(co === 4 ? "Les couleurs de votre logo" : "Des couleurs " + ["nature (vert, beige)", "classiques (bleu marine, blanc)", "chaleureuses (terre cuite, crème)", "modernes (noir, blanc, une touche vive)"][co ?? 0]);
   const but = rep.but;
   reco.push(["Un bouton d'appel et de devis visible sur chaque écran", "Une page optimisée pour Google autour de votre métier et de votre commune", "Une galerie de vos réalisations", "La prise de rendez-vous ou de réservation en ligne", "Vos garanties et vos avis clients mis en avant"][but] || "");
